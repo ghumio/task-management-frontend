@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Debug Tool</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .test-section {
+        background: #f5f5f5;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .result {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 3px;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 3px;
+        overflow-x: auto;
+      }
+      input {
+        padding: 8px;
+        margin: 5px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔧 Task Manager API Debug Tool</h1>
+
+      <div class="test-section">
+        <h3>1. Backend Health Check</h3>
+        <button onclick="testBackendHealth()">Test Backend Connection</button>
+        <div id="health-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>2. CORS Test</h3>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="cors-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>3. Registration Test</h3>
+        <input
+          type="text"
+          id="reg-username"
+          placeholder="Username"
+          value="testuser"
+        />
+        <input
+          type="email"
+          id="reg-email"
+          placeholder="Email"
+          value="test@example.com"
+        />
+        <input
+          type="password"
+          id="reg-password"
+          placeholder="Password"
+          value="password123"
+        />
+        <button onclick="testRegistration()">Test Registration</button>
+        <div id="registration-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>4. Login Test</h3>
+        <input
+          type="text"
+          id="login-username"
+          placeholder="Username"
+          value="testuser"
+        />
+        <input
+          type="password"
+          id="login-password"
+          placeholder="Password"
+          value="password123"
+        />
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>5. Environment Check</h3>
+        <div id="env-info">
+          <strong>Frontend Environment:</strong><br />
+          API URL: <span id="api-url"></span><br />
+          Environment: <span id="env-name"></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "https://task-management-backend-iqd2.onrender.com";
+
+      // Update environment info
+      document.getElementById("api-url").textContent = API_URL;
+      document.getElementById("env-name").textContent = "production";
+
+      function showResult(elementId, message, type = "info") {
+        const element = document.getElementById(elementId);
+        element.innerHTML = `<div class="result ${type}">${message}</div>`;
+      }
+
+      async function testBackendHealth() {
+        showResult(
+          "health-result",
+          "⏳ Testing backend connection...",
+          "warning"
+        );
+
+        try {
+          const response = await fetch(`${API_URL}/health`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            showResult(
+              "health-result",
+              `✅ Backend is healthy!<br><pre>${JSON.stringify(
+                data,
+                null,
+                2
+              )}</pre>`,
+              "success"
+            );
+          } else {
+            showResult(
+              "health-result",
+              `❌ Backend returned status: ${response.status}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          showResult(
+            "health-result",
+            `❌ Connection failed: ${error.message}<br>The backend may be starting up (cold start). Wait 30-60 seconds and try again.`,
+            "error"
+          );
+        }
+      }
+
+      async function testCORS() {
+        showResult("cors-result", "⏳ Testing CORS...", "warning");
+
+        try {
+          const response = await fetch(`${API_URL}/`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            showResult(
+              "cors-result",
+              `✅ CORS is working!<br><pre>${JSON.stringify(
+                data,
+                null,
+                2
+              )}</pre>`,
+              "success"
+            );
+          } else {
+            showResult(
+              "cors-result",
+              `❌ CORS test failed: ${response.status}`,
+              "error"
+            );
+          }
+        } catch (error) {
+          if (error.message.includes("CORS")) {
+            showResult(
+              "cors-result",
+              `❌ CORS Error: ${error.message}<br>Check backend CORS configuration.`,
+              "error"
+            );
+          } else {
+            showResult(
+              "cors-result",
+              `❌ Connection failed: ${error.message}`,
+              "error"
+            );
+          }
+        }
+      }
+
+      async function testRegistration() {
+        const username = document.getElementById("reg-username").value;
+        const email = document.getElementById("reg-email").value;
+        const password = document.getElementById("reg-password").value;
+
+        showResult(
+          "registration-result",
+          "⏳ Testing registration...",
+          "warning"
+        );
+
+        try {
+          const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, email, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult(
+              "registration-result",
+              `✅ Registration successful!<br><pre>${JSON.stringify(
+                data,
+                null,
+                2
+              )}</pre>`,
+              "success"
+            );
+          } else {
+            showResult(
+              "registration-result",
+              `❌ Registration failed: ${data.message}<br><pre>${JSON.stringify(
+                data,
+                null,
+                2
+              )}</pre>`,
+              "error"
+            );
+          }
+        } catch (error) {
+          showResult(
+            "registration-result",
+            `❌ Registration error: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      async function testLogin() {
+        const username = document.getElementById("login-username").value;
+        const password = document.getElementById("login-password").value;
+
+        showResult("login-result", "⏳ Testing login...", "warning");
+
+        try {
+          const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult(
+              "login-result",
+              `✅ Login successful!<br><pre>${JSON.stringify(
+                data,
+                null,
+                2
+              )}</pre>`,
+              "success"
+            );
+          } else {
+            showResult(
+              "login-result",
+              `❌ Login failed: ${data.message}<br><pre>${JSON.stringify(
+                data,
+                null,
+                2
+              )}</pre>`,
+              "error"
+            );
+          }
+        } catch (error) {
+          showResult(
+            "login-result",
+            `❌ Login error: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      // Auto-test backend health on page load
+      window.onload = function () {
+        setTimeout(testBackendHealth, 1000);
+      };
+    </script>
+  </body>
+</html>
