@@ -8,4 +8,4 @@
   status = 200
 
 [build.environment]
-  REACT_APP_API_URL = "https://task-manager-backend-xxxx.onrender.com"
+  REACT_APP_API_URL = "https://task-management-backend-iqd2.onrender.com"

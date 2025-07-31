@@ -10,12 +10,14 @@ node_modules/
 /build
 /dist
 
-# Environment variables
-.env
+# Environment variables (sensitive ones)
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Note: .env.development and .env.production are kept in repo
+# as they only contain non-sensitive API URLs
 
 # Logs
 npm-debug.log*
