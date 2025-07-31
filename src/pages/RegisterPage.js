@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api"; // Use configured api instance instead of axios
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -16,16 +16,30 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      const { data } = await axios.post("/api/auth/register", {
+      console.log("🚀 Attempting registration with:", {
+        username,
+        email,
+        password: "***",
+      });
+
+      const { data } = await api.post("/auth/register", {
         username,
         email,
         password,
       });
-      login(data);
-      navigate("/");
+
+      console.log("✅ Registration successful:", data);
+      alert("Registration successful! Please login with your credentials.");
+      navigate("/login");
     } catch (error) {
-      console.error("Registration failed:", error);
-      alert("Registration failed. Please try again.");
+      console.error("❌ Registration failed:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.errors?.join(", ") ||
+        "Registration failed. Please try again.";
+
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

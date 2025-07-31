@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api"; // Use configured api instance instead of axios
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -15,15 +15,24 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const { data } = await axios.post("/api/auth/login", {
+      console.log("🚀 Attempting login with:", { username, password: "***" });
+
+      const { data } = await api.post("/auth/login", {
         username,
         password,
       });
+
+      console.log("✅ Login successful:", data);
       login(data);
       navigate("/");
     } catch (error) {
-      console.error("Login failed:", error);
-      alert("Login failed. Please check your credentials.");
+      console.error("❌ Login failed:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        "Login failed. Please check your credentials.";
+
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
